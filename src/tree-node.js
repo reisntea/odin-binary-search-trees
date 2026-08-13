@@ -8,7 +8,7 @@ class Node {
   constructor(value = null) {
     this.#value = value;        // value stored in the node
     this.#leftChild = null;     // pointer to the left child node in the tree
-    this.#leftChild = null;     // pointer to the right child node in the tree
+    this.#rightChild = null;     // pointer to the right child node in the tree
   }
   get value () {
     return this.#value;
@@ -24,6 +24,9 @@ class Node {
   }
   set right (Node) {
     this.#rightChild = Node;
+  }
+  set left (Node) {
+    this.#leftChild = Node;
   }
 }
 
