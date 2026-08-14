@@ -201,25 +201,55 @@ function Tree (array) {
       }
 
       if (value < currNode.value) {
-        if (currNode.left !== null) return getDepth(currNode.left, depth + 1)
+        if (currNode.left !== null) return getDepth(currNode.left, depth + 1);
       } else if (value > currNode.value) {
-        if (currNode.right !== null) return getDepth(currNode.right, depth + 1)
+        if (currNode.right !== null) return getDepth(currNode.right, depth + 1);
       }
     }
 
     return getDepth(root, 0);
   }
 
-  const height = (currNode, currHeight = 0) => {
-    if (currNode === null) return currHeight - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
+  const height = (value) => {
+    if (root === null) return;
 
-    const leftHeight = height(currNode.left, currHeight + 1);
-    const rightHeight = height(currNode.right, currHeight + 1);
-    return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
+    // Finds the node that equals the value and returns it
+    // If it's not in the tree then it return undefined
+    function getNode (currNode) {
+      if (value < currNode.value) {
+        if (currNode.left !== null) return getNode(currNode.left);
+      } else if (value > currNode.value) {
+        if (currNode.right !== null) return getNode(currNode.right);
+      } else {
+        return currNode;
+      }
+    }
+
+    function getHeight (currNode, currHeight = 0) {
+      if (currNode === null) return currHeight - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
+
+      const leftHeight = getHeight(currNode.left, currHeight + 1);
+      const rightHeight = getHeight(currNode.right, currHeight + 1);
+      return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
+    }
+
+    let currNode = getNode(root);
+
+    return currNode === undefined ? undefined : getHeight(currNode); // Checks if the node exists and if it does returns it's height
   }
 
   const isBalanced = () => {
     if (root === null) return;
+
+    // A duplicate of the inner function of height is here bc checkBalance uses nodes 
+    // and passing the value of the currNode.left so it can use it to find currNode.left is kind of bad
+    function getHeight (currNode, currHeight = 0) {
+      if (currNode === null) return currHeight - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
+
+      const leftHeight = getHeight(currNode.left, currHeight + 1);
+      const rightHeight = getHeight(currNode.right, currHeight + 1);
+      return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
+    }
 
     // For this to work it assumes that if currNode is null then that node is balanced
     function checkBalance (currNode) {
@@ -227,7 +257,7 @@ function Tree (array) {
         (height(currNode, 0) === 0) ||
         (checkBalance(currNode.left) &&
         checkBalance(currNode.right) &&
-        Math.abs(height(currNode.left) - height(currNode.right)) <= 1);
+        Math.abs(getHeight(currNode.left) - getHeight(currNode.right)) <= 1);
     }
 
     return checkBalance(root);
