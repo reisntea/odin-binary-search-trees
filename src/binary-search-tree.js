@@ -210,24 +210,24 @@ function Tree (array) {
     return getDepth(root, 0);
   }
 
+  const height = (currNode, currHeight = 0) => {
+    if (currNode === null) return currHeight - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
+
+    const leftHeight = height(currNode.left, currHeight + 1);
+    const rightHeight = height(currNode.right, currHeight + 1);
+    return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
+  }
+
   const isBalanced = () => {
     if (root === null) return;
-
-    function getHeight (currNode, height) {
-      if (currNode === null) return height - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
-
-      const leftHeight = getHeight(currNode.left, height + 1);
-      const rightHeight = getHeight(currNode.right, height + 1);
-      return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
-    }
 
     // For this to work it assumes that if currNode is null then that node is balanced
     function checkBalance (currNode) {
       return (currNode === null) ||
-        (getHeight(currNode, 0) === 0) ||
+        (height(currNode, 0) === 0) ||
         (checkBalance(currNode.left) &&
         checkBalance(currNode.right) &&
-        Math.abs(getHeight(currNode.left, 0) - getHeight(currNode.right, 0)) <= 1);
+        Math.abs(height(currNode.left) - height(currNode.right)) <= 1);
     }
 
     return checkBalance(root);
@@ -264,7 +264,7 @@ function Tree (array) {
   // Sets root to the treeRoot in buildTree function
   let root = buildTree(array);
 
-  return { printTree, includes, insert, deleteItem, levelOrderForEach, inOrderForEach, preOrderForEach, postOrderForEach, depth, isBalanced, rebalance };
+  return { printTree, includes, insert, deleteItem, levelOrderForEach, inOrderForEach, preOrderForEach, postOrderForEach, depth, height, isBalanced, rebalance };
 }
 
 export { Tree };
