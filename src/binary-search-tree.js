@@ -48,7 +48,7 @@ function Tree (array) {
   // Visualizes the tree in a structured format using root of tree
   // Provided by TOP for BST project
   const prettyPrint = (node, prefix = '', isLeft = true) => {
-    if (node === null || node === undefined) {
+    if (node === null) {
       return;
     }
 
@@ -74,63 +74,197 @@ function Tree (array) {
   // Doing (value, currNode = root) doesn't work on the root, only it's children for some reason 
     // (maybe bc it's a parameter functioning as the root and not the root itself?)
   const insert = (value) => {
-    root = insertNode(value, root);
-  }
+    function insertNode (currNode) {
+      // Once a child with no node is hit it means it's found where to place the value so it returns a newNode
+      if (currNode === null) {
+        return new Node(value);
+      }
 
-  const insertNode = (value, currNode) => {
-    // Once a child with no node is hit it means it's found where to place the value so it returns a newNode
-    if (currNode === null) {
-      return new Node(value);
+      // Recursively go down the tree accordingly
+      if (value < currNode.value) {
+        currNode.left = insertNode(currNode.left);
+      } else if (value > currNode.value) {
+        currNode.right = insertNode(currNode.right);
+      }
+
+      return currNode; // If the node isn't null or the value is already in the tree this returns the currNode as is
     }
 
-    // Recursively go down the tree accordingly
-    if (value < currNode.value) {
-      currNode.left = insertNode(value, currNode.left);
-    } else if (value > currNode.value) {
-      currNode.right = insertNode(value, currNode.right);
-    }
-
-    return currNode; // If the node isn't null or the value is already in the tree this returns the currNode as is
+    root = insertNode(root);
   }
 
   // Similarly to insert, doing (value, currNode = root) will not delete the root
   const deleteItem = (value) => {
-    root = remove(value, root);
-  }
-
-  const remove = (value, currNode) => {
-    // Doesn't do anything if it hits a dead end or tree is empty
-    if (currNode === null) {
-      return;
-    }
-
-    // Recursively go down the tree accordingly
-    if (value < currNode.value) {
-      currNode.left = remove(value, currNode.left);
-    } else if (value > currNode.value) {
-      currNode.right = remove(value, currNode.right);
-    } else { // Means the value to remove was found
-      // Follows the rules for removing a value from a BST
-      if (currNode.left === null) return currNode.right;
-      if (currNode.right === null) return currNode.left;
-
-      let tempNode = currNode.right;
-      while (tempNode.left !== null) {
-        tempNode = tempNode.left;
+    function remove (currNode, value) {
+      // Doesn't do anything if it hits a dead end or tree is empty
+      if (currNode === null) {
+        return null;
       }
 
-      currNode.value = tempNode.value;
-      currNode.right = deleteNode(currNode.value, currNode.right);
+      // Recursively go down the tree accordingly
+      if (value < currNode.value) {
+        currNode.left = remove(currNode.left);
+      } else if (value > currNode.value) {
+        currNode.right = remove(currNode.right);
+      } else { // Means the value to remove was found
+        // Follows the rules for removing a value from a BST
+        if (currNode.left === null) return currNode.right;
+        if (currNode.right === null) return currNode.left;
+
+        let tempNode = currNode.right;
+        while (tempNode.left !== null) {
+          tempNode = tempNode.left;
+        }
+
+        currNode.value = tempNode.value;
+        currNode.right = remove(currNode.right, tempNode.value); // Calls remove on itself using its own value to remove its duplicate
+      }
+
+      return currNode; // If the node isn't what we're removing return node as is
     }
 
-    return currNode; // If the node isn't what we're removing return node as is
+    root = remove(root, value);
+  }
+
+  const levelOrderForEach = (callback) => {
+    if (root === null) return;
+    if (typeof callback !== "function") throw new TypeError("needs callback function");
+    let queue = []; // An array that's acting like a queue
+    queue.push(root);
+
+    // loop goes through tree in level order
+    // Logic taken from mycodeschool which was provided by TOP
+    let currNode;
+    while (queue.length !== 0) {
+      currNode = queue[0];
+      callback(currNode.value);
+      if (currNode.left !== null) queue.push(currNode.left);
+      if (currNode.right !== null) queue.push(currNode.right);
+      queue = queue.slice(1); // Removes first element in array. Using slice for efficiency
+    }
+  } 
+
+  const inOrderForEach = (callback) => {
+    if (root === null) return;
+    if (typeof callback !== "function") throw new Error("needs callback function");
+
+    // in order goes left, root, right
+    function inOrderTraversal (currNode) {
+      if (currNode !== null) {
+        inOrderTraversal(currNode.left);
+        callback(currNode.value);
+        inOrderTraversal(currNode.right);
+      }
+    } 
+
+    inOrderTraversal(root);
+  }
+
+  const preOrderForEach = (callback) => {
+    if (root === null) return;
+    if (typeof callback !== "function") throw new Error("needs callback function");
+
+    // pre order goes root, left, right
+    function preOrderTraversal (currNode) {
+      if (currNode !== null) {
+        callback(currNode.value);
+        preOrderTraversal(currNode.left);
+        preOrderTraversal(currNode.right);
+      }
+    } 
+
+    preOrderTraversal(root);
+  }
+
+  const postOrderForEach = (callback) => {
+    if (root === null) return;
+    if (typeof callback !== "function") throw new Error("needs callback function");
+
+    // pre order goes root, left, right
+    function postOrderTraversal (currNode) {
+      if (currNode !== null) {
+        postOrderTraversal(currNode.left);
+        postOrderTraversal(currNode.right);
+        callback(currNode.value);
+      }
+    } 
+
+    postOrderTraversal(root);
+  }
+
+  const depth = (value) => {
+    if (root === null) return;
+
+    function getDepth(currNode, depth) {
+      if (currNode.value === value) {
+        return depth;
+      }
+
+      if (value < currNode.value) {
+        if (currNode.left !== null) return getDepth(currNode.left, depth + 1)
+      } else if (value > currNode.value) {
+        if (currNode.right !== null) return getDepth(currNode.right, depth + 1)
+      }
+    }
+
+    return getDepth(root, 0);
+  }
+
+  const isBalanced = () => {
+    if (root === null) return;
+
+    function getHeight (currNode, height) {
+      if (currNode === null) return height - 1; // Removes 1 since null doesn't count but it needs to hit null to know it's reached the end
+
+      const leftHeight = getHeight(currNode.left, height + 1);
+      const rightHeight = getHeight(currNode.right, height + 1);
+      return leftHeight > rightHeight ? leftHeight : rightHeight; // Returns whichever height is greater
+    }
+
+    // For this to work it assumes that if currNode is null then that node is balanced
+    function checkBalance (currNode) {
+      return (currNode === null) ||
+        (getHeight(currNode, 0) === 0) ||
+        (checkBalance(currNode.left) &&
+        checkBalance(currNode.right) &&
+        Math.abs(getHeight(currNode.left, 0) - getHeight(currNode.right, 0)) <= 1);
+    }
+
+    return checkBalance(root);
+  }
+
+  const rebalance =  () => {
+    if (root === null || isBalanced()) return; // Don't do anything if already balanced
+
+    const inOrderArray = [];
+    inOrderForEach((value) => {
+      inOrderArray.push(value);
+    });
+
+    const balancedArray = [];
+
+    // Puts values into balancedArray that will create a balanced tree when the array is fed into buildTree function
+    // Uses the In-order traversal and rebuild method to push values
+    function makeBalancedArray (start = 0, end = inOrderArray.length - 1) {
+      if (start > end) return null;
+
+      const mid = Math.floor((start + end) / 2);
+      balancedArray.push(inOrderArray[mid]);
+
+      makeBalancedArray(start, mid -1);
+      makeBalancedArray(mid + 1, end);
+    }
+
+    makeBalancedArray();
+
+    root = buildTree(balancedArray);
 
   }
 
-  // Sets root to the treeRoot in build tree
+  // Sets root to the treeRoot in buildTree function
   let root = buildTree(array);
 
-  return { printTree, includes, insert, deleteItem };
+  return { printTree, includes, insert, deleteItem, levelOrderForEach, inOrderForEach, preOrderForEach, postOrderForEach, depth, isBalanced, rebalance };
 }
 
 export { Tree };
